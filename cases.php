@@ -84,7 +84,78 @@ require __DIR__ . '/includes/app_header.php';
     <h1>Cases</h1>
     <p class="sub"><?= count($cases) ?> matter<?= count($cases) === 1 ? '' : 's' ?> <?= $statusFilter !== 'all' ? 'with status “' . htmlspecialchars($statusFilter) . '”' : 'on file' ?>.</p>
   </div>
-  <button class="btn btn-primary" data-open-modal="case-modal"><?= icon('plus') ?> New matter</button>
+  <button class="btn btn-primary" type="button" id="case-toggle-btn"><?= icon('plus') ?> New matter</button>
+</div>
+
+<!-- Inline add/edit panel (no modal — sits in the page flow) -->
+<div class="card inline-panel" id="case-panel">
+  <form method="post">
+    <div class="card-head" style="padding:20px 24px 0">
+      <h3 id="case-panel-title">New matter</h3>
+      <span class="modal-close" id="case-panel-close"><?= icon('close') ?></span>
+    </div>
+    <div class="card-pad" style="padding-top:14px">
+      <?= csrf_field() ?>
+      <input type="hidden" name="action" value="save">
+      <input type="hidden" name="id" id="f-id" value="">
+
+      <div class="input-row">
+        <div class="field">
+          <label>Matter number</label>
+          <input class="input mono" type="text" name="case_number" id="f-case_number" placeholder="LO-2026-XXX" required>
+        </div>
+        <div class="field">
+          <label>Practice area</label>
+          <input class="input" type="text" name="practice_area" id="f-practice_area" placeholder="e.g. Corporate">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Matter title</label>
+        <input class="input" type="text" name="title" id="f-title" placeholder="Short descriptive title" required>
+      </div>
+
+      <div class="field">
+        <label>Client name</label>
+        <input class="input" type="text" name="client_name" id="f-client_name" placeholder="Client or company name" required>
+      </div>
+
+      <div class="input-row">
+        <div class="field">
+          <label>Status</label>
+          <select class="input" name="status" id="f-status">
+            <option value="open">Open</option>
+            <option value="pending">Pending</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Priority</label>
+          <select class="input" name="priority" id="f-priority">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-row">
+        <div class="field">
+          <label>Opened on</label>
+          <input class="input" type="date" name="opened_on" id="f-opened_on">
+        </div>
+        <div class="field">
+          <label>Due on</label>
+          <input class="input" type="date" name="due_on" id="f-due_on">
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:6px">
+        <button type="button" class="btn btn-ghost" id="case-cancel-btn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save matter</button>
+      </div>
+    </div>
+  </form>
 </div>
 
 <form method="get" class="toolbar">
@@ -115,9 +186,9 @@ require __DIR__ . '/includes/app_header.php';
         <td><span class="badge badge-<?= htmlspecialchars($c['priority']) ?>"><?= htmlspecialchars($c['priority']) ?></span></td>
         <td class="case-client"><?= $c['due_on'] ? date('d M Y', strtotime($c['due_on'])) : '—' ?></td>
         <td style="text-align:right;white-space:nowrap">
-          <button class="icon-btn btn-sm" style="display:inline-grid"
-            data-open-modal="case-modal"
-            onclick='fillCaseForm(<?= json_encode($c) ?>)'><?= icon('edit') ?></button>
+          <button class="icon-btn btn-sm case-edit-btn" style="display:inline-grid"
+            type="button"
+            data-case='<?= htmlspecialchars(json_encode($c), ENT_QUOTES) ?>'><?= icon('edit') ?></button>
           <form method="post" style="display:inline" onsubmit="return confirm('Remove this matter? This can\'t be undone.')">
             <?= csrf_field() ?>
             <input type="hidden" name="action" value="delete">
@@ -134,98 +205,55 @@ require __DIR__ . '/includes/app_header.php';
   <?php endif; ?>
 </div>
 
-<!-- Add/Edit modal -->
-<div class="modal-overlay" id="case-modal">
-  <div class="modal-box">
-    <form method="post">
-      <div class="modal-head">
-        <h3 id="case-modal-title">New matter</h3>
-        <span class="modal-close" data-close-modal><?= icon('close') ?></span>
-      </div>
-      <div class="modal-body">
-        <?= csrf_field() ?>
-        <input type="hidden" name="action" value="save">
-        <input type="hidden" name="id" id="f-id" value="">
-
-        <div class="input-row">
-          <div class="field">
-            <label>Matter number</label>
-            <input class="input mono" type="text" name="case_number" id="f-case_number" placeholder="LO-2026-XXX" required>
-          </div>
-          <div class="field">
-            <label>Practice area</label>
-            <input class="input" type="text" name="practice_area" id="f-practice_area" placeholder="e.g. Corporate">
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Matter title</label>
-          <input class="input" type="text" name="title" id="f-title" placeholder="Short descriptive title" required>
-        </div>
-
-        <div class="field">
-          <label>Client name</label>
-          <input class="input" type="text" name="client_name" id="f-client_name" placeholder="Client or company name" required>
-        </div>
-
-        <div class="input-row">
-          <div class="field">
-            <label>Status</label>
-            <select class="input" name="status" id="f-status">
-              <option value="open">Open</option>
-              <option value="pending">Pending</option>
-              <option value="closed">Closed</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Priority</label>
-            <select class="input" name="priority" id="f-priority">
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="input-row">
-          <div class="field">
-            <label>Opened on</label>
-            <input class="input" type="date" name="opened_on" id="f-opened_on">
-          </div>
-          <div class="field">
-            <label>Due on</label>
-            <input class="input" type="date" name="due_on" id="f-due_on">
-          </div>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <button type="button" class="btn btn-ghost" data-close-modal>Cancel</button>
-        <button type="submit" class="btn btn-primary">Save matter</button>
-      </div>
-    </form>
-  </div>
-</div>
-
 <script>
-function fillCaseForm(c) {
-  document.getElementById('case-modal-title').textContent = 'Edit matter';
-  document.getElementById('f-id').value = c.id;
-  document.getElementById('f-case_number').value = c.case_number;
-  document.getElementById('f-title').value = c.title;
-  document.getElementById('f-client_name').value = c.client_name;
-  document.getElementById('f-practice_area').value = c.practice_area || '';
-  document.getElementById('f-status').value = c.status;
-  document.getElementById('f-priority').value = c.priority;
-  document.getElementById('f-opened_on').value = c.opened_on || '';
-  document.getElementById('f-due_on').value = c.due_on || '';
-}
-document.querySelector('[data-open-modal="case-modal"]').addEventListener('click', function (e) {
-  if (!e.target.closest('tr')) {
-    document.getElementById('case-modal-title').textContent = 'New matter';
-    document.querySelector('#case-modal form').reset();
-    document.getElementById('f-id').value = '';
+(function () {
+  var panel = document.getElementById('case-panel');
+  var form = panel.querySelector('form');
+  var title = document.getElementById('case-panel-title');
+
+  function openPanel(scroll) {
+    panel.classList.add('open');
+    if (scroll) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-});
+  function closePanel() {
+    panel.classList.remove('open');
+  }
+  function resetForm() {
+    form.reset();
+    document.getElementById('f-id').value = '';
+    title.textContent = 'New matter';
+  }
+
+  document.getElementById('case-toggle-btn').addEventListener('click', function () {
+    if (panel.classList.contains('open') && document.getElementById('f-id').value === '') {
+      closePanel();
+    } else {
+      resetForm();
+      openPanel(true);
+      document.getElementById('f-case_number').focus();
+    }
+  });
+
+  document.getElementById('case-cancel-btn').addEventListener('click', closePanel);
+  document.getElementById('case-panel-close').addEventListener('click', closePanel);
+
+  document.querySelectorAll('.case-edit-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var c = JSON.parse(btn.getAttribute('data-case'));
+      title.textContent = 'Edit matter';
+      document.getElementById('f-id').value = c.id;
+      document.getElementById('f-case_number').value = c.case_number;
+      document.getElementById('f-title').value = c.title;
+      document.getElementById('f-client_name').value = c.client_name;
+      document.getElementById('f-practice_area').value = c.practice_area || '';
+      document.getElementById('f-status').value = c.status;
+      document.getElementById('f-priority').value = c.priority;
+      document.getElementById('f-opened_on').value = c.opened_on || '';
+      document.getElementById('f-due_on').value = c.due_on || '';
+      openPanel(true);
+    });
+  });
+})();
 </script>
 
 <?php require __DIR__ . '/includes/app_footer.php'; ?>
