@@ -10,15 +10,19 @@ on plain PHP + MySQL and [PHPAuth](https://github.com/PHPAuth/PHPAuth)
 2. Start Apache + MySQL in the XAMPP control panel.
 3. **Fresh install:** open phpMyAdmin → create a database called `legalops`
    → **Import** → select `sql/legalops.sql`. This creates every table
-   (PHPAuth's, the cases module, and the clients module) and seeds demo
-   data for both.
+   (PHPAuth's, cases, clients, and billing/invoicing) and seeds demo data
+   for all of them.
    **Already running an earlier copy?** Don't re-import the whole file —
-   it'll wipe your data. Instead run `sql/migrations/002_clients_module.sql`,
-   which only adds the new clients tables and is safe to run on top of
-   what you already have.
+   it'll wipe your data. Instead run `sql/migrations/002_clients_module.sql`
+   (and any other migration added since), which only adds what's new and
+   is safe to run on top of what you already have.
 4. If your DB user/password or folder name differ from the defaults,
    edit `config/config.php`.
-5. Visit `http://localhost/legalops`.
+5. **Invoicing (Billing module):** run `composer install` in the
+   `legalops` folder to pull in `dompdf/dompdf`, the one dependency the
+   invoice PDF renderer needs. The rest of the app stays plain PHP — see
+   [`INVOICING.md`](INVOICING.md) for the full setup and how it's wired.
+6. Visit `http://localhost/legalops`.
 
 **Demo login:** `demo@legalops.local` / `LegalOps@123`
 
@@ -67,6 +71,7 @@ private/public limited company, association and trust clients:
 - Profile fields (`full_name`, `job_title`, `avatar_color`) live as extra
   columns on `phpauth_users`, since PHPAuth's `addUser()`/`updateUser()`
   write straight into named columns on that table.
-- Tasks / Calendar / Documents / Billing in the sidebar are still
-  placeholder pages (`modules.php`). Clients and Cases are fully wired up.
-  Say the word and any of the others can be built out next.
+- Tasks / Calendar / Documents in the sidebar are still placeholder pages
+  (`modules.php`). Dashboard, Cases, Clients, and Billing (invoicing for
+  India + GCC — see `INVOICING.md`) are fully wired up. Say the word and
+  any of the remaining placeholders can be built out next.
