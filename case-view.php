@@ -132,6 +132,10 @@ $openTaskCount = count(array_filter($tasks, fn($t) => $t['status'] !== 'done'));
 
 $page_title = $case['title'];
 $active_nav = 'cases';
+$breadcrumb = [
+    ['label' => 'Cases', 'href' => 'cases.php'],
+    ['label' => $case['case_number'] . ' — ' . $case['title']],
+];
 
 require __DIR__ . '/includes/app_header.php';
 ?>

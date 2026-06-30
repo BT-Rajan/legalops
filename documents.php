@@ -5,6 +5,9 @@ $current_user = require_login($auth);
 
 $page_title = 'Documents';
 $active_nav = 'documents';
+$breadcrumb = [
+    ['label' => 'Documents'],
+];
 
 // ---- Fetch for listing ----------------------------------------------------
 // This is a firm-wide library: every document attached to every matter,

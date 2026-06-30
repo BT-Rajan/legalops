@@ -4,6 +4,7 @@ $current_user = require_login($auth);
 
 $page_title = 'Cases';
 $active_nav = 'cases';
+$breadcrumb = [['label' => 'Cases']];
 
 // ---- Handle form actions (add / edit / delete) --------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_valid()) {
